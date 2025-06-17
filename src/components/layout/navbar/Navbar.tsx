@@ -18,7 +18,7 @@ const Navbar: FC<{
 					<BsList size={24} />
 				</button>
 				<div className="flex gap-3">
-					<NavLink to={`/dashboards`} className="flex gap-2 w-full">
+					<NavLink to={`/`} className="flex gap-2 w-full">
 						<img src="/logo.png" alt="logo" width={30} height={30} />
 						<p className="w-32 flex justify-left font-bold text-[20px] min-w-42">
 							APEX

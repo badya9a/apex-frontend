@@ -66,7 +66,7 @@ export const routesLinks: RoutesData[] = [
 	{
 		element: SingleWorkerProfile,
 		path: '/profile/:workerId',
-		rolesToAccess: [ROLES.ADMIN, ROLES.USER],
+		rolesToAccess: [ROLES.ADMIN, ROLES.USER, ROLES.ACCOUNTANT, ROLES.VIEWER],
 	},
 	{
 		element: VendorsPage,
