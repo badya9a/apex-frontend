@@ -22,7 +22,7 @@ const LoginPage = () => {
 			AuthService.login(data),
 		onSuccess: ({ data }) => {
 			saveToStorage(data)
-			navigate('/dashboards')
+			navigate('/')
 		},
 	})
 
