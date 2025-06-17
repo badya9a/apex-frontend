@@ -64,9 +64,6 @@ export function InvoicesChart() {
 		}
 	}, [data])
 
-	console.log(data2)
-	console.log(data)
-
 	return (
 		<Card className="flex flex-col border-none rounded-none h-full w-full">
 			<CardHeader>

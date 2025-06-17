@@ -29,8 +29,6 @@ const Transactions = () => {
 		setMaxPages(transactions?.totalPages ? transactions?.totalPages : 1)
 	}, [transactions])
 
-	console.log(transactions?.content)
-
 	return (
 		<div>
 			<CreateTransactionDialog title="CREATE TRANSACTION" />

@@ -27,8 +27,6 @@ export const EditBill: FC<{
 		},
 	})
 
-	console.log(billNumber)
-
 	const handleSubmit = () => {
 		editBill({ description: desc })
 	}

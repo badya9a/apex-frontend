@@ -16,7 +16,6 @@ const AuthProvider: FC<{
 	children: ReactNode
 	roles: availableRoles[]
 }> = ({ children, roles }) => {
-	console.log(roles)
 	const navigate = useNavigate()
 
 	const { mutate: logout } = useMutation({
@@ -33,8 +32,6 @@ const AuthProvider: FC<{
 		onSuccess: ({ data }) =>
 			saveTokensStorage({ accessToken: data.accessToken }),
 		onError: (error) => {
-			console.log(errorCatch(error))
-
 			if (errorCatch(error) === 'jwt expired') {
 				logout()
 			}

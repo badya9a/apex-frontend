@@ -40,7 +40,6 @@ const Vendors = () => {
 	}, [vendorId, allVendors])
 
 	const highlightRow = (id: number) => {
-		console.log(id)
 		// Access the row DOM element
 		const vendor = vendorRefs.current[id]
 		if (vendor) {

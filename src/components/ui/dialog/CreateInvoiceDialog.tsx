@@ -160,7 +160,6 @@ const CreateInvoiceDialog: FC<{ title: string }> = ({ title }) => {
 
 	useEffect(() => {
 		if (invoiceNumberData?.invoiceNumber) {
-			console.log('doing it')
 			setFormData((prev) => ({
 				...prev,
 				invoiceNumber: invoiceNumberData.invoiceNumber,
