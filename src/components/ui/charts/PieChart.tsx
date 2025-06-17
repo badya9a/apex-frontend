@@ -79,17 +79,18 @@ export function PieChartComponent() {
 				<CardTitle>All assets</CardTitle>
 				<CardDescription>January - June 2025</CardDescription>
 			</CardHeader>
-			<CardContent className="flex-1 pb-0">
+			<CardContent className="flex-1 pb-0 h-full w-full">
 				<ChartContainer
 					config={chartConfig}
-					className="mx-auto aspect-square max-h-[250px]"
+					className="mx-auto aspect-square max-h-[350px]"
 				>
-					<PieChart>
+					<PieChart className="h-[500px]">
 						<ChartTooltip
 							cursor={false}
 							content={<ChartTooltipContent hideLabel />}
 						/>
 						<Pie
+							className="h-[500px]"
 							data={data2 ? data2 : []}
 							dataKey="amount"
 							nameKey="name"
