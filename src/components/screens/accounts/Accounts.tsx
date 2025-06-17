@@ -1,3 +1,5 @@
+import ChangeAccountDialog from '@/components/ui/dialog/ChangeAccountDialog'
+import CreateAccountDialog from '@/components/ui/dialog/CreateAccountDialog'
 import {
 	Table,
 	TableBody,
@@ -8,22 +10,20 @@ import {
 	TableRow,
 } from '@/components/ui/table'
 import { AccountsService } from '@/services/accounts.service'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import type { IAccount } from '@/shared/types/accounts'
+import { useQuery } from '@tanstack/react-query'
 
 const Accounts = () => {
 	const { data: allAccounts } = useQuery({
-		queryKey: ['get all vendors'],
+		queryKey: ['get all accounts'],
 		queryFn: () => AccountsService.getAll(),
-		select: (data) => data.data,
-	})
-
-	const { mutate: deleteAccount } = useMutation({
-		mutationKey: ['delete account'],
-		mutationFn: (id: number) => AccountsService.deleteById(id),
+		select: ({ data }: { data: IAccount[] }) =>
+			data.sort((a, b) => +a.code - +b.code),
 	})
 
 	return (
 		<div>
+			<CreateAccountDialog title="Create account" />
 			<Table>
 				<TableCaption>A list of your accounts.</TableCaption>
 				<TableHeader>
@@ -41,12 +41,9 @@ const Accounts = () => {
 							<TableCell className="font-medium">{a.code}</TableCell>
 							<TableCell>{a.name}</TableCell>
 							<TableCell>{a.type}</TableCell>
-							<TableCell>{a.balance}</TableCell>
-							<TableCell
-								onClick={() => deleteAccount(a.id)}
-								className="hover:cursor-pointer"
-							>
-								Delete
+							<TableCell>{a.balance}$</TableCell>
+							<TableCell>
+								<ChangeAccountDialog defaultValue={a.name} id={a.id} />
 							</TableCell>
 						</TableRow>
 					))}

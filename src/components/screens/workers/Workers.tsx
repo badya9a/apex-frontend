@@ -1,5 +1,6 @@
 import ChangeUserInfoDialog from '@/components/ui/dialog/ChangeUserInfoDialog'
 import RegisterNewUserDialog from '@/components/ui/dialog/RegisterNewUserDialog'
+import Pagination from '@/components/ui/pagination/Pagination'
 import {
 	Table,
 	TableBody,
@@ -11,55 +12,22 @@ import {
 } from '@/components/ui/table'
 import { UserService } from '@/services/user.service'
 import { useQuery } from '@tanstack/react-query'
-import { all } from 'axios'
-
-const workers = [
-	{
-		id: '1',
-		email: 'max@apex.com',
-		fullName: 'Max Sazonov',
-		roles: ['USER'],
-		createdAt: '2004-05-25',
-		updatedAt: '2025-06-06',
-		phone: 1234567,
-	},
-	{
-		id: '2',
-		email: 'olya@apex.com',
-		fullName: 'Olha Musiichuk',
-		roles: ['ACCOUNTANT'],
-		createdAt: '2004-05-25',
-		updatedAt: '2025-06-06',
-		phone: 1234567,
-	},
-	{
-		id: '3',
-		email: 'Vasya@apex.com',
-		fullName: 'Bohdan Kozikov',
-		roles: ['ADMIN'],
-		createdAt: '2004-05-25',
-		updatedAt: '2025-06-06',
-		phone: 1234567,
-	},
-]
-
-interface IChangeUserInfoDialog {
-	id: string
-	email: string
-	phone: number
-	firstName: string
-	lastName: string
-	roles: string[]
-}
+import { useEffect, useState } from 'react'
 
 const Workers = () => {
 	const { data: allUsers } = useQuery({
 		queryKey: ['get all users'],
-		queryFn: () => UserService.getAll(),
+		queryFn: () => UserService.getAll({ page, size }),
 		select: (data) => data.data,
 	})
 
-	console.log(allUsers)
+	const [page, setPage] = useState(0)
+	const [maxPages, setMaxPages] = useState(5)
+	const size = 15
+
+	useEffect(() => {
+		setMaxPages(allUsers?.totalPages ? allUsers.totalPages : 1)
+	}, [allUsers])
 
 	return (
 		<div className="flex flex-col gap-5">
@@ -79,7 +47,7 @@ const Workers = () => {
 					</TableHeader>
 					<TableBody>
 						{allUsers?.content.map((w) => (
-							<TableRow>
+							<TableRow key={w.email}>
 								<TableCell>{w.email}</TableCell>
 								<TableCell className="flex gap-2">
 									{w.roles.map((r) => (
@@ -92,7 +60,7 @@ const Workers = () => {
 								<TableCell>
 									<ChangeUserInfoDialog
 										user={{
-											id: w.id,
+											publicId: w.publicId,
 											email: w.email,
 											phone: w.phone,
 											firstName: w.firstName
@@ -109,6 +77,7 @@ const Workers = () => {
 						))}
 					</TableBody>
 				</Table>
+				<Pagination page={page} maxPages={maxPages} setPage={setPage} />
 			</div>
 		</div>
 	)

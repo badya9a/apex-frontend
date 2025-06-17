@@ -1,11 +1,11 @@
-export enum ROLES {
-	'ADMIN',
-	'ACCOUNTANT',
-	'VIEWER',
-	'USER',
-}
+export const ROLES = {
+	ADMIN: 'ADMIN',
+	ACCOUNTANT: 'ACCOUNTANT',
+	VIEWER: 'VIEWER',
+	USER: 'USER',
+} as const
 
-export const availableRoles = Object.values(ROLES)
+export type availableRoles = (typeof ROLES)[keyof typeof ROLES]
 
 export interface IUser {
 	publicId: string
@@ -13,5 +13,5 @@ export interface IUser {
 	firstName: string
 	lastName: string
 	phone: number
-	roles: typeof availableRoles
+	roles: availableRoles[]
 }

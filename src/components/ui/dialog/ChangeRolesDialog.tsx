@@ -60,7 +60,7 @@ const ChangeUserPassword = () => {
 							<Button variant="outline">Cancel</Button>
 						</DialogClose>
 						<Button
-							disabled={password.length >= 8 && isPending}
+							disabled={password.length <= 8 && !isPending}
 							type="submit"
 							className="hover:cursor-pointer"
 							onClick={() => changePassword()}

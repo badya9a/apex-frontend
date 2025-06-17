@@ -1,5 +1,6 @@
-import BsIcon from '@/components/ui/BsIcon'
-import MultiPageDialog from '@/components/ui/dialog/CreateInvoiceDialog'
+import CreateBillDialog from '@/components/ui/dialog/CreateBillDialog'
+import Pagination from '@/components/ui/pagination/Pagination'
+import { EditBill } from '@/components/ui/popover/EditBill'
 import {
 	Table,
 	TableBody,
@@ -9,22 +10,33 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table'
+import { InvoicesService } from '@/services/invoices.service'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 
 const Bills = () => {
 	const [page, setPage] = useState<number>(0)
-	const [size, setSize] = useState<number>(10)
+	const size = 10
 	const [maxPages, setMaxPages] = useState<number>(0)
+
+	const { data: bills } = useQuery({
+		queryKey: ['get all bills', page],
+		queryFn: () => InvoicesService.getBills({ page, size }),
+		select: (data) => data.data,
+	})
+
+	useEffect(() => {
+		setMaxPages(bills?.totalPages ? bills?.totalPages : 1)
+	}, [bills])
 
 	return (
 		<div>
-			Create bill
+			<CreateBillDialog title="Create bill" />
 			<Table>
 				<TableCaption>A list of your recent bills.</TableCaption>
 				<TableHeader>
 					<TableRow>
-						<TableHead className="w-[100px]">Code</TableHead>
+						<TableHead className="w-[100px]">Bill Number</TableHead>
 						<TableHead>Vendor</TableHead>
 						<TableHead>Issue date</TableHead>
 						<TableHead>Due date</TableHead>
@@ -35,30 +47,26 @@ const Bills = () => {
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					<TableRow>
-						<TableCell className="font-medium">INV001</TableCell>
-						<TableCell>Vendor</TableCell>
-						<TableCell>20.05.2025</TableCell>
-						<TableCell>23.05.2025</TableCell>
-						<TableCell>12 tables</TableCell>
-						<TableCell>1050$</TableCell>
-						<TableCell>Paid</TableCell>
-						<TableCell>Actions</TableCell>
-					</TableRow>
+					{bills?.content.map((b) => (
+						<TableRow>
+							<TableCell className="font-medium">{b.billNumber}</TableCell>
+							<TableCell>{b.vendor}</TableCell>
+							<TableCell>{b.issueDate.toString()}</TableCell>
+							<TableCell>{b.dueDate.toString()}</TableCell>
+							<TableCell>{b.description}</TableCell>
+							<TableCell>{b.amount}$</TableCell>
+							<TableCell>{b.status}</TableCell>
+							<TableCell>
+								<EditBill
+									billNumber={b.billNumber}
+									defaultValue={b.description}
+								/>
+							</TableCell>
+						</TableRow>
+					))}
 				</TableBody>
 			</Table>
-			<div className="flex gap-2">
-				<button>
-					<BsIcon name="BsChevronDoubleLeft" size={20} color="BsChevronLeft" />
-				</button>
-				<button>
-					<BsIcon name="BsChevronLeft" size={20} color="white" />
-				</button>
-				<p className="text-lg">{page}</p>
-				<button>
-					<BsIcon name="BsChevronRight" size={20} color="white" />
-				</button>
-			</div>
+			<Pagination page={page} setPage={setPage} maxPages={maxPages} />
 		</div>
 	)
 }

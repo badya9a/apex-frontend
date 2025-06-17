@@ -1,4 +1,4 @@
-import { useEffect, useState, type FC } from 'react'
+import { useEffect, useState, type ChangeEvent, type FC } from 'react'
 import {
 	Dialog,
 	DialogContent,
@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQueries, useQuery } from '@tanstack/react-query'
 import { Picker } from '../combbox/Picker'
 import { CustomersService } from '@/services/customers.service'
 import DatePicker from '../date-picker/DatePicker'
@@ -20,25 +20,57 @@ import { InvoicesService } from '@/services/invoices.service'
 import { TransactionsPicker } from '../combbox/TransactionsPicker'
 import { AccountsService } from '@/services/accounts.service'
 import type { CreateInvoiceWithTransactionProps } from '@/shared/types/invoices.types'
+import BsIcon from '../BsIcon'
 
-const MultiPageDialog: FC<{ title: string }> = ({ title }) => {
+const CreateInvoiceDialog: FC<{ title: string }> = ({ title }) => {
 	const [open, setOpen] = useState(false)
 	const [currentPage, setCurrentPage] = useState(1)
-	const [issueDate, setIssueDate] = useState<Date | undefined>(undefined)
-	const [dueDate, setDueDate] = useState<Date | undefined>(undefined)
+	const [issueDate, setIssueDate] = useState<Date | null>(null)
+	const [dueDate, setDueDate] = useState<Date | null>(null)
 	const [customer, setCustomer] = useState<{
 		fullName: string
 		id: number
 		companyName: string
-	}>()
-	const [leftAccountId, setLeftAccountId] = useState<{
+	} | null>(null)
+	const [leftAccount, setLeftAccount] = useState<{
 		id: number
 		name: string
-	}>()
-	const [rightAccountId, setRightAccountId] = useState<{
+		balance: number
+	} | null>(null)
+	const [rightAccount, setRightAccount] = useState<{
 		id: number
 		name: string
-	}>()
+		balance: number
+	} | null>(null)
+
+	const results = useQueries({
+		queries: [
+			{
+				queryKey: ['get arrow', leftAccount?.id],
+				queryFn: () =>
+					InvoicesService.getTransactionArrow({
+						id: leftAccount?.id!,
+						entryType: 'DEBIT',
+					}),
+				enabled: !!leftAccount?.id,
+			},
+			{
+				queryKey: ['get arrow', rightAccount?.id],
+				queryFn: () =>
+					InvoicesService.getTransactionArrow({
+						id: rightAccount?.id!,
+						entryType: 'CREDIT',
+					}),
+				enabled: !!rightAccount?.id,
+			},
+		],
+		combine: (results) => {
+			return {
+				data: results.map((result) => result.data),
+				pending: results.some((result) => result.isPending),
+			}
+		},
+	})
 
 	const { data: invoiceNumberData } = useQuery({
 		queryKey: ['get invoice number'],
@@ -47,7 +79,7 @@ const MultiPageDialog: FC<{ title: string }> = ({ title }) => {
 	})
 
 	const [formData, setFormData] = useState({
-		invoiceNumber: invoiceNumberData,
+		invoiceNumber: invoiceNumberData?.invoiceNumber,
 		amount: 0,
 		invoiceDescription: '',
 		transactionDescription: `Payment for ${invoiceNumberData}`,
@@ -65,7 +97,7 @@ const MultiPageDialog: FC<{ title: string }> = ({ title }) => {
 		select: (data) => data.data,
 	})
 
-	const handleInputChange = (e) => {
+	const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target
 		setFormData((prev) => ({ ...prev, [name]: value }))
 	}
@@ -97,19 +129,18 @@ const MultiPageDialog: FC<{ title: string }> = ({ title }) => {
 	})
 
 	const handleSubmit = () => {
-		console.log('Form submitted:', formData)
 		mutate({
 			invoiceRequest: {
-				customerId: customer?.id,
-				invoiceNumber: formData?.invoiceNumber,
+				customerId: customer?.id!,
+				invoiceNumber: formData?.invoiceNumber!,
 				amount: formData.amount,
-				issueDate: issueDate?.toISOString().split('T')[0],
-				dueDate: dueDate?.toISOString().split('T')[0],
+				issueDate: issueDate?.toISOString().split('T')[0]!,
+				dueDate: dueDate?.toISOString().split('T')[0]!,
 				description: formData.invoiceDescription,
 			},
 			transactionRequest: {
-				leftAccountId: leftAccountId?.id,
-				rightAccountId: rightAccountId?.id,
+				leftAccountId: leftAccount?.id!,
+				rightAccountId: rightAccount?.id!,
 				amount: formData.amount,
 				description: formData.transactionDescription,
 			},
@@ -118,23 +149,39 @@ const MultiPageDialog: FC<{ title: string }> = ({ title }) => {
 		setCurrentPage(1) // Reset to first page for next time
 	}
 
-	const handleOpenChange = (isOpen) => {
+	const handleOpenChange = (isOpen: boolean) => {
 		setOpen(isOpen)
 		if (!isOpen) {
+			clearFields()
 			// Reset to first page when dialog closes
 			setCurrentPage(1)
 		}
 	}
 
 	useEffect(() => {
-		if (invoiceNumberData) {
+		if (invoiceNumberData?.invoiceNumber) {
+			console.log('doing it')
 			setFormData((prev) => ({
 				...prev,
-				invoiceNumber: invoiceNumberData,
+				invoiceNumber: invoiceNumberData.invoiceNumber,
 				transactionDescription: `Payment for ${invoiceNumberData}`,
 			}))
 		}
 	}, [invoiceNumberData])
+
+	const clearFields = () => {
+		setFormData({
+			...formData,
+			amount: 0,
+			invoiceDescription: '',
+			transactionDescription: '',
+		})
+		setDueDate(null)
+		setIssueDate(null)
+		setCustomer(null)
+		setLeftAccount(null)
+		setRightAccount(null)
+	}
 
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange}>
@@ -144,7 +191,7 @@ const MultiPageDialog: FC<{ title: string }> = ({ title }) => {
 				</Button>
 			</DialogTrigger>
 
-			<DialogContent className="sm:max-w-[425px] bg-white">
+			<DialogContent className="w-full bg-white">
 				{currentPage === 1 ? (
 					<>
 						<DialogHeader>
@@ -157,7 +204,7 @@ const MultiPageDialog: FC<{ title: string }> = ({ title }) => {
 						<div className="grid gap-4 py-4">
 							<div className="grid grid-cols-4 items-center gap-4">
 								<Picker
-									dataToPick={allCustomers?.map((c) => {
+									dataToPick={allCustomers!?.map((c) => {
 										return {
 											id: c.id,
 											companyName: c.companyName,
@@ -254,37 +301,73 @@ const MultiPageDialog: FC<{ title: string }> = ({ title }) => {
 
 						<div className="grid gap-4 py-4">
 							<div className="grid grid-cols-4 items-center gap-4">
+								{leftAccount ? (
+									<span className="flex items-center gap-1">
+										{results.data[0]?.data === 'DOWN' ? (
+											<BsIcon name="BsArrowDown" color="black" size={30} />
+										) : (
+											<BsIcon name="BsArrowUp" color="black" size={30} />
+										)}
+										Balance:
+										<br />
+										{leftAccount?.balance}$
+									</span>
+								) : (
+									<span></span>
+								)}
 								<TransactionsPicker
-									picked={leftAccountId}
+									picked={leftAccount}
 									placeholder="From account"
-									setPicked={setLeftAccountId}
+									setPicked={setLeftAccount}
 									dataToPick={
-										rightAccountId
-											? allAccounts
-													?.filter((a) => a.id !== rightAccountId.id)
+										rightAccount
+											? allAccounts!
+													?.filter((a) => a.id !== rightAccount.id)
 													.map((a) => {
-														return { id: a.id, name: a.name }
+														return {
+															id: a.id,
+															name: a.name,
+															balance: a.balance,
+														}
 													})
-											: allAccounts?.map((a) => {
-													return { id: a.id, name: a.name }
+											: allAccounts!?.map((a) => {
+													return { id: a.id, name: a.name, balance: a.balance }
 											  })
 									}
 								/>
 							</div>
 							<div className="grid grid-cols-4 items-center gap-4">
+								{rightAccount ? (
+									<span className="flex items-center gap-1">
+										{results.data[1]?.data === 'DOWN' ? (
+											<BsIcon name="BsArrowDown" color="black" size={30} />
+										) : (
+											<BsIcon name="BsArrowUp" color="black" size={30} />
+										)}
+										Balance:
+										<br />
+										{rightAccount?.balance}$
+									</span>
+								) : (
+									<span></span>
+								)}
 								<TransactionsPicker
 									placeholder="To account"
-									picked={rightAccountId}
-									setPicked={setRightAccountId}
+									picked={rightAccount}
+									setPicked={setRightAccount}
 									dataToPick={
-										leftAccountId
-											? allAccounts
-													?.filter((a) => a.id !== leftAccountId.id)
+										leftAccount
+											? allAccounts!
+													?.filter((a) => a.id !== leftAccount.id)
 													.map((a) => {
-														return { id: a.id, name: a.name }
+														return {
+															id: a.id,
+															name: a.name,
+															balance: a.balance,
+														}
 													})
-											: allAccounts?.map((a) => {
-													return { id: a.id, name: a.name }
+											: allAccounts!?.map((a) => {
+													return { id: a.id, name: a.name, balance: a.balance }
 											  })
 									}
 								/>
@@ -326,8 +409,8 @@ const MultiPageDialog: FC<{ title: string }> = ({ title }) => {
 								onClick={handleSubmit}
 								disabled={
 									!(
-										leftAccountId?.id &&
-										rightAccountId?.id &&
+										leftAccount?.id &&
+										rightAccount?.id &&
 										formData.transactionDescription
 									)
 								}
@@ -342,4 +425,4 @@ const MultiPageDialog: FC<{ title: string }> = ({ title }) => {
 	)
 }
 
-export default MultiPageDialog
+export default CreateInvoiceDialog

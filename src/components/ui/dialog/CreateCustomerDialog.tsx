@@ -11,7 +11,7 @@ import {
 import { Button } from '../button'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { useMutation } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useState, type FC } from 'react'
 import type { IContact } from '@/shared/types/contacts.types'
 import { CustomersService } from '@/services/customers.service'
 import Field from '../form-elements/Field'
@@ -19,23 +19,47 @@ import { validEmail } from '@/shared/regex'
 import { toast } from 'sonner'
 import { CustomerTypePicker } from '../combbox/CustomerTypePicker'
 
-const CreateCustomerDialog = () => {
+const CreateCustomerDialog: FC<{
+	title: string
+	formType: 'create' | 'update'
+	contact?: IContact
+}> = ({ title, formType, contact }) => {
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
 		reset,
 	} = useForm<IContact>({
+		defaultValues: {
+			email: contact?.email ? contact?.email : '',
+			firstName: contact?.firstName ? contact?.firstName : '',
+			lastName: contact?.lastName ? contact?.lastName : '',
+			phone: contact?.phone ? contact?.phone : '',
+			billingStreet: contact?.billingStreet ? contact?.billingStreet : '',
+			billingCity: contact?.billingCity ? contact?.billingCity : '',
+			billingZipCode: contact?.billingZipCode ? contact?.billingZipCode : '',
+			billingCountry: contact?.billingCountry ? contact?.billingCountry : '',
+		},
 		mode: 'onChange',
 	})
 
+	const [open, setOpen] = useState(false)
+
 	const [type, setType] = useState<'CUSTOMER' | 'VENDOR' | 'BOTH'>('BOTH')
 
-	const { mutate, isPending } = useMutation({
+	const { mutate: updateCustomer } = useMutation({
 		mutationFn: (data: IContact) =>
+			CustomersService.updateCustomer({ ...data }),
+		onSuccess: () => {
+			toast('Customer updated successfully', { duration: 100 })
+		},
+	})
+
+	const { mutate: createCustomer, isPending } = useMutation({
+		mutationFn: (data: Omit<IContact, 'id'>) =>
 			CustomersService.createCustomer({ ...data }),
 		onSuccess: () => {
-			toast('Customer created successfully', { duration: 100 })
+			toast('Customer created successfully', { duration: 3000 })
 		},
 	})
 
@@ -50,33 +74,55 @@ const CreateCustomerDialog = () => {
 		lastName,
 		phone,
 	}) => {
-		mutate({
-			type,
-			companyName,
-			firstName,
-			lastName,
-			email,
-			phone,
-			billingStreet,
-			billingCity,
-			billingZipCode,
-			billingCountry,
-		})
+		formType === 'create'
+			? createCustomer({
+					type,
+					companyName,
+					firstName,
+					lastName,
+					email,
+					phone,
+					billingStreet,
+					billingCity,
+					billingZipCode,
+					billingCountry,
+			  })
+			: updateCustomer({
+					id: contact?.id!,
+					type,
+					companyName,
+					firstName,
+					lastName,
+					email,
+					phone,
+					billingStreet,
+					billingCity,
+					billingZipCode,
+					billingCountry,
+			  })
+	}
+
+	const handleOpenChange = (isOpen: boolean) => {
+		setOpen(isOpen)
+		if (!isOpen) {
+			// Reset to first page when dialog closes
+			reset()
+		}
 	}
 
 	return (
-		<Dialog onOpenChange={() => reset()}>
+		<Dialog onOpenChange={handleOpenChange} open={open}>
 			<form>
 				<DialogTrigger asChild>
 					<button className="p-3 bg-green-600 rounded-lg hover:cursor-pointer ">
-						CREATE NEW CUSTOMER
+						{title.toUpperCase()}
 					</button>
 				</DialogTrigger>
 				<DialogContent className="sm:max-w-[425px] bg-gray-500">
 					<DialogHeader>
-						<DialogTitle>Create customer</DialogTitle>
+						<DialogTitle>{title}</DialogTitle>
 						<DialogDescription>
-							Create new customer here. Click save when you&apos;re done.
+							{title} here. Click save when you&apos;re done.
 						</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-4">
@@ -123,8 +169,9 @@ const CreateCustomerDialog = () => {
 							{...register('phone', {
 								required: 'Phone is required',
 							})}
+							pattern="/^(\+\d{1,3}\s?)?(\(?\d{1,4}\)?[\s.-]?)?\d{3,4}[\s.-]?\d{3,4}$/"
 							placeholder="Phone number"
-							type="tel"
+							type="text"
 							error={errors.billingStreet}
 						/>
 						<Field
@@ -164,14 +211,16 @@ const CreateCustomerDialog = () => {
 						<DialogClose asChild>
 							<Button variant="outline">Cancel</Button>
 						</DialogClose>
-						<Button
-							type="submit"
-							className="hover:cursor-pointer"
-							disabled={isPending}
-							onClick={handleSubmit(onSubmit)}
-						>
-							Create user
-						</Button>
+						<div onClick={() => handleOpenChange(false)}>
+							<Button
+								type="submit"
+								className="hover:cursor-pointer"
+								disabled={isPending}
+								onClick={handleSubmit(onSubmit)}
+							>
+								{formType === 'create' ? 'Create' : 'Update'}
+							</Button>
+						</div>
 					</DialogFooter>
 				</DialogContent>
 			</form>

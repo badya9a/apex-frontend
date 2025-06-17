@@ -1,29 +1,11 @@
-import { useParams } from 'react-router'
-import AuthFields from '../login/AuthFields'
-import useAuth from '@/hooks/useAuth'
 import { useQuery } from '@tanstack/react-query'
 import { UserService } from '@/services/user.service'
-import { useForm } from 'react-hook-form'
-import type { availableRoles } from '@/shared/types/user.types'
-import { useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import ChangeRolesDialog from '@/components/ui/dialog/ChangeRolesDialog'
 import ChangeUserPassword from '@/components/ui/dialog/ChangeRolesDialog'
 
-interface IChangeUserInfo {
-	publicId: string
-	email: string
-	phone: number
-	firstName: string
-	lastName: string
-	roles: typeof availableRoles
-}
 const SingleWorkerProfile = () => {
-	const { workerId } = useParams()
-
 	const { data: userInfo } = useQuery({
-		queryKey: ['get user profile', workerId],
-		queryFn: () => UserService.getUserProfileById(workerId),
+		queryKey: ['get user profile'],
+		queryFn: () => UserService.getUserProfileById(),
 		select: (data) => data.data,
 	})
 

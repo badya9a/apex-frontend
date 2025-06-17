@@ -6,8 +6,7 @@ const SidebarLink: FC<{
 	title: string
 	isActive: boolean
 	path: string
-	handleActiveLink: (title: string) => void
-}> = ({ title, isActive, handleActiveLink, path }) => {
+}> = ({ title, isActive, path }) => {
 	return (
 		<NavLink
 			to={path}
@@ -15,7 +14,6 @@ const SidebarLink: FC<{
 				'flex flex-row items-center justify-left p-4',
 				isActive ? 'bg-gray-300 font-bold border-l-7 border-green-700' : ''
 			)}
-			onClick={() => handleActiveLink(title)}
 		>
 			{title}
 		</NavLink>

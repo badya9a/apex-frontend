@@ -1,7 +1,4 @@
-import axios from 'axios'
-import { removeTokensStorage, saveToStorage } from './auth.helper'
 import type { IAuthResponse } from '@/shared/user.interface'
-import Cookies from 'js-cookie'
 import { getContentType } from '@/api/api.helper'
 import axiosClassic from '@/api/interceptors'
 import type { IUser } from '@/shared/types/user.types'
@@ -20,7 +17,7 @@ export const AuthService = {
 		lastName,
 		phone,
 		roles,
-	}: Omit<IUser, 'id'>) {
+	}: Omit<IUser, 'publicId'>) {
 		return await axiosClassic.post(`/api/auth/register`, {
 			email,
 			firstName,
@@ -30,13 +27,15 @@ export const AuthService = {
 		})
 	},
 
-	logout() {
-		removeTokensStorage()
+	async logout() {
+		return axiosClassic.post('api/auth/logout')
+		// removeTokensStorage()
+		// localStorage.removeItem('user')
 	},
 
 	async getNewTokens() {
 		return await axiosClassic.post<{ accessToken: string; tokenType: string }>(
-			'/auth/refresh',
+			'api/auth/refresh',
 			{
 				headers: getContentType(),
 			}

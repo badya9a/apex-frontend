@@ -1,11 +1,11 @@
 import useAuth from '@/hooks/useAuth'
-import { availableRoles, ROLES } from '@/shared/types/user.types'
-import type { FC, ReactNode } from 'react'
+import { type availableRoles, ROLES } from '@/shared/types/user.types'
+import { useEffect, type FC, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 
 const CheckRole: FC<{
 	children: ReactNode
-	roles: (typeof availableRoles)[]
+	roles: availableRoles[]
 }> = ({ children, roles }) => {
 	const { user } = useAuth()
 
@@ -13,8 +13,20 @@ const CheckRole: FC<{
 
 	const Children = () => <>{children}</>
 
-	if (user?.roles[0] === 'USER') navigate(`/profile/${user?.publicId}`)
+	useEffect(() => {
+		if (user?.roles[0] === 'USER') navigate(`/profile/${user?.publicId}`)
+		return
+	}, [])
 
-	if (roles.includes(user?.roles[0])) return <Children />
+	useEffect(() => {
+		if (!roles.includes(ROLES[user?.roles[0]])) {
+			navigate('/404')
+			return
+		}
+	}, [])
+
+	if (roles.includes(ROLES[user?.roles[0]])) {
+		return <Children />
+	}
 }
 export default CheckRole

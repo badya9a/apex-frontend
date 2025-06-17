@@ -1,6 +1,4 @@
 'use client'
-
-import { TrendingUp } from 'lucide-react'
 import { Pie, PieChart } from 'recharts'
 
 import {
@@ -17,46 +15,69 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart'
-const chartData = [
-	{ browser: 'chrome', visitors: 275, fill: 'var(--color-chrome)' },
-	{ browser: 'safari', visitors: 200, fill: 'var(--color-safari)' },
-	{ browser: 'firefox', visitors: 187, fill: 'var(--color-firefox)' },
-	{ browser: 'edge', visitors: 173, fill: 'var(--color-edge)' },
-	{ browser: 'other', visitors: 90, fill: 'var(--color-other)' },
-]
+import { useQuery } from '@tanstack/react-query'
+import { DashboardService } from '@/services/accounts.service'
+import { useEffect, useState } from 'react'
 
 const chartConfig = {
-	visitors: {
-		label: 'Visitors',
-	},
-	chrome: {
-		label: 'Chrome',
+	ASSET: {
+		label: 'ASSET',
 		color: 'hsl(var(--chart-1))',
 	},
-	safari: {
-		label: 'Safari',
+	EQUITY: {
+		label: 'EQUITY',
 		color: 'hsl(var(--chart-2))',
 	},
-	firefox: {
-		label: 'Firefox',
+	EXPENSES: {
+		label: 'EXPENSE',
 		color: 'hsl(var(--chart-3))',
 	},
-	edge: {
-		label: 'Edge',
+	LIABILITY: {
+		label: 'LIABILITY',
 		color: 'hsl(var(--chart-4))',
 	},
-	other: {
-		label: 'Other',
+	REVENUE: {
+		label: 'REVENUE',
 		color: 'hsl(var(--chart-5))',
 	},
 } satisfies ChartConfig
 
 export function PieChartComponent() {
+	const { data } = useQuery({
+		queryKey: ['get pie chart data'],
+		queryFn: () => DashboardService.getPieChartData(),
+		select: (data) => data.data,
+	})
+
+	const [data2, setData2] = useState<
+		{ name: string; amount: number; fill: string }[] | []
+	>([])
+
+	useEffect(() => {
+		if (data) {
+			setData2([
+				{ name: 'ASSET', amount: data.ASSET, fill: `var(--color-ASSET)` },
+				{ name: 'REVENUE', amount: data.REVENUE, fill: `var(--color-REVENUE)` },
+				{
+					name: 'EXPENSES',
+					amount: data.EXPENSE,
+					fill: `var(--color-EXPENSE)`,
+				},
+				{
+					name: 'LIABILITY',
+					amount: data.LIABILITY,
+					fill: `var(--color-LIABILITY)`,
+				},
+				{ name: 'EQUITY', amount: data.EQUITY, fill: `var(--color-EQUITY)` },
+			])
+		}
+	}, [data])
+
 	return (
-		<Card className="flex flex-col border-none rounded-none">
+		<Card className="flex flex-col border-none rounded-none h-full w-full">
 			<CardHeader className="items-center pb-0">
-				<CardTitle>Pie Chart - Donut</CardTitle>
-				<CardDescription>January - June 2024</CardDescription>
+				<CardTitle>All assets</CardTitle>
+				<CardDescription>January - June 2025</CardDescription>
 			</CardHeader>
 			<CardContent className="flex-1 pb-0">
 				<ChartContainer
@@ -69,20 +90,17 @@ export function PieChartComponent() {
 							content={<ChartTooltipContent hideLabel />}
 						/>
 						<Pie
-							data={chartData}
-							dataKey="visitors"
-							nameKey="browser"
+							data={data2 ? data2 : []}
+							dataKey="amount"
+							nameKey="name"
 							innerRadius={60}
 						/>
 					</PieChart>
 				</ChartContainer>
 			</CardContent>
 			<CardFooter className="flex-col gap-2 text-sm">
-				<div className="flex items-center gap-2 font-medium leading-none">
-					Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-				</div>
 				<div className="leading-none text-muted-foreground">
-					Showing total visitors for the last 6 months
+					Showing all assets
 				</div>
 			</CardFooter>
 		</Card>

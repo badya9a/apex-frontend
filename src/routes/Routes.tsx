@@ -1,5 +1,4 @@
-import type { FC } from 'react'
-import { createBrowserRouter, Route } from 'react-router'
+import { createBrowserRouter } from 'react-router'
 import { routesLinks } from './routes.data'
 import Layout from '@/components/layout/Layout'
 import LoginPage from '@/components/screens/login/LoginPage'
@@ -10,9 +9,11 @@ export const router = createBrowserRouter([
 		return {
 			path: route.path,
 			element: (
-				<Layout>
-					<route.element />
-				</Layout>
+				<AuthProvider roles={route.rolesToAccess}>
+					<Layout>
+						<route.element />
+					</Layout>
+				</AuthProvider>
 			),
 		}
 	}),

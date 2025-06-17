@@ -1,6 +1,5 @@
 import { BarChartComponent } from '@/components/ui/charts/BarChart'
 import { InvoicesChart } from '@/components/ui/charts/InvoicesChart'
-import { LinearChartComponent } from '@/components/ui/charts/LinearChart'
 import { PieChartComponent } from '@/components/ui/charts/PieChart'
 
 const Dashboard = () => {
@@ -17,12 +16,6 @@ const Dashboard = () => {
 					</div>
 					<div className="row-span-1 col-span-1 bg-white min-h-[200px] flex items-center justify-center">
 						<BarChartComponent />
-					</div>
-					<div className="row-span-1 col-span-1 bg-white  min-h-[200px] flex items-center justify-center">
-						4
-					</div>
-					<div className="row-span-1 col-span-1 bg-white  min-h-[200px] flex items-center justify-center">
-						<LinearChartComponent />
 					</div>
 				</div>
 			</section>

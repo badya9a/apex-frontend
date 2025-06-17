@@ -12,7 +12,11 @@ import {
 	PopoverTrigger,
 } from '@/components/ui/popover'
 
-const DatePicker = ({ date, setDate, label }) => {
+const DatePicker: React.FC<{
+	date: Date | null
+	setDate: React.Dispatch<React.SetStateAction<Date | null>>
+	label: string
+}> = ({ date, setDate, label }) => {
 	const [open, setOpen] = React.useState(false)
 
 	return (
@@ -27,7 +31,7 @@ const DatePicker = ({ date, setDate, label }) => {
 						id="date"
 						className="w-48 justify-between font-normal"
 					>
-						{date ? date.toLocaleDateString() : 'Select date'}
+						{date !== null ? date.toLocaleDateString() : 'Select date'}
 						<ChevronDownIcon />
 					</Button>
 				</PopoverTrigger>
@@ -37,10 +41,10 @@ const DatePicker = ({ date, setDate, label }) => {
 				>
 					<Calendar
 						mode="single"
-						selected={date}
+						selected={date !== null ? date : undefined}
 						captionLayout="dropdown"
 						onSelect={(date) => {
-							setDate(date)
+							setDate(date !== undefined ? date : null)
 							setOpen(false)
 						}}
 					/>

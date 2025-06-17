@@ -3,7 +3,7 @@ import type { IAuthInput } from './auth.interface'
 import { AuthService } from '@/services/auth/auth.service'
 import AuthFields from './AuthFields'
 import { useMutation } from '@tanstack/react-query'
-import { redirect, useNavigate } from 'react-router'
+import { useNavigate } from 'react-router'
 import { saveToStorage } from '@/services/auth/auth.helper'
 
 const LoginPage = () => {

@@ -1,15 +1,6 @@
 import { lazy } from 'react'
 import type { RoutesData } from './routes.interface'
 import { ROLES } from '@/shared/types/user.types'
-// import Banking from '@/components/screens/banking/BankingPage'
-// import SalesPage from '@/components/screens/sales/SalesPage'
-// import ExpensesPage from '@/components/screens/expenses/ExpensesPage'
-// import Workers from '@/components/screens/workers/Workers'
-// import Reports from '@/components/screens/reports/Reports'
-// import TaxesPage from '@/components/screens/taxes/TaxesPage'
-// import AccountingPage from '@/components/screens/accounting/AccountingPage'
-// import MyAccountant from '@/components/screens/my-accountant/MyAccountant'
-// import Dashboard from '@/components/screens/dashboard/DashboardsPage'
 
 const DashBoards = lazy(
 	() => import('../components/screens/dashboard/DashboardsPage')
@@ -39,8 +30,8 @@ const VendorsPage = lazy(
 export const routesLinks: RoutesData[] = [
 	{
 		element: DashBoards,
-		path: '/dashboards',
-		rolesToAccess: [ROLES.ADMIN, ROLES.ACCOUNTANT, ROLES.VIEWER],
+		path: '/',
+		rolesToAccess: [ROLES['ADMIN'], ROLES['ACCOUNTANT'], ROLES['VIEWER']],
 	},
 	{
 		element: InvoicesPage,

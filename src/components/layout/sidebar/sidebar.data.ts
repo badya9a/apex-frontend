@@ -1,15 +1,15 @@
-import { availableRoles, ROLES } from '@/shared/types/user.types'
+import { type availableRoles, ROLES } from '@/shared/types/user.types'
 
 export interface sidebarLinks {
 	title: string
 	link: string
-	rolesToAccess: typeof availableRoles
+	rolesToAccess: availableRoles[]
 }
 
 export const sidebarLinks: sidebarLinks[] = [
 	{
 		title: 'Dashboards',
-		link: '/dashboards',
+		link: '/',
 		rolesToAccess: [ROLES.ADMIN, ROLES.ACCOUNTANT, ROLES.VIEWER],
 	},
 	{

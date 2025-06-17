@@ -21,16 +21,16 @@ import { useMutation } from '@tanstack/react-query'
 import { UserService } from '@/services/user.service'
 import { useState, type FC } from 'react'
 import { Combobox } from '../Combobox'
-import type { availableRoles } from '@/shared/types/user.types'
+import { ROLES, type availableRoles } from '@/shared/types/user.types'
 import { toast } from 'sonner'
 
 interface IChangeUserInfoDialog {
-	id: string
+	publicId: string
 	email: string
 	phone: number
 	firstName: string
 	lastName: string
-	roles: typeof availableRoles
+	roles: availableRoles[]
 }
 
 const ChangeUserInfoDialog: FC<{
@@ -53,7 +53,7 @@ const ChangeUserInfoDialog: FC<{
 
 	const [formType, setFormType] = useState<'edit' | 'editRoles'>('edit')
 
-	const [roles, setRoles] = useState<{ role: string }[]>([])
+	const [roles, setRoles] = useState<{ role: availableRoles }[]>([])
 
 	const { mutate, isPending } = useMutation({
 		mutationFn: (data: {
@@ -62,16 +62,16 @@ const ChangeUserInfoDialog: FC<{
 			lastName: string
 			phone: number
 		}) =>
-			UserService.changeUsersInfo(user.id, {
+			UserService.changeUsersInfo(user.publicId, {
 				email: data.email,
 				firstName: data.firstName,
 				lastName: data.lastName,
 				phone: data.phone,
-				roles: roles.map((r) => r.role),
+				roles: roles.map((r) => ROLES[r.role]),
 			}),
 	})
 
-	const onSubmit: SubmitHandler<Omit<IChangeUserInfoDialog, 'id'>> = ({
+	const onSubmit: SubmitHandler<Omit<IChangeUserInfoDialog, 'publicId'>> = ({
 		email,
 		firstName,
 		lastName,
@@ -87,7 +87,7 @@ const ChangeUserInfoDialog: FC<{
 	const { mutate: changeRoles } = useMutation({
 		mutationFn: () =>
 			UserService.changeUsersRole(
-				user.id,
+				user.publicId,
 				roles.map((r) => r.role)
 			),
 		onSuccess: () => {
@@ -98,7 +98,7 @@ const ChangeUserInfoDialog: FC<{
 	})
 
 	const { mutate: changePassword } = useMutation({
-		mutationFn: () => UserService.resetUserPassword(user.id),
+		mutationFn: () => UserService.resetUserPassword(user.publicId),
 		onSuccess: () => {
 			toast('Password changed successfully', {
 				duration: 10000,

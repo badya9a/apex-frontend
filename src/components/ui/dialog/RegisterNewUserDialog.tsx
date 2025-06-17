@@ -14,7 +14,11 @@ import { useForm, type SubmitHandler } from 'react-hook-form'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Combobox } from '../Combobox'
-import type { availableRoles, IUser } from '@/shared/types/user.types'
+import {
+	ROLES,
+	type availableRoles,
+	type IUser,
+} from '@/shared/types/user.types'
 import { AuthService } from '@/services/auth/auth.service'
 
 interface IChangeUserInfoDialog {
@@ -23,7 +27,7 @@ interface IChangeUserInfoDialog {
 	phone: number
 	firstName: string
 	lastName: string
-	roles: typeof availableRoles
+	roles: availableRoles[]
 }
 
 const RegisterNewUserDialog = () => {
@@ -32,11 +36,11 @@ const RegisterNewUserDialog = () => {
 		handleSubmit,
 		formState,
 		reset,
-	} = useForm<Omit<IUser, 'id'>>({
+	} = useForm<Omit<IUser, 'publicId'>>({
 		mode: 'onChange',
 	})
 
-	const [roles, setRoles] = useState<{ role: string }[]>([])
+	const [roles, setRoles] = useState<{ role: availableRoles }[]>([])
 
 	const { mutate, isPending } = useMutation({
 		mutationFn: (data: {
@@ -44,14 +48,14 @@ const RegisterNewUserDialog = () => {
 			firstName: string
 			lastName: string
 			phone: number
-			roles: typeof availableRoles
+			roles: availableRoles[]
 		}) =>
 			AuthService.register({
 				email: data.email,
 				firstName: data.firstName,
 				lastName: data.lastName,
 				phone: data.phone,
-				roles: roles.map((r) => r.role),
+				roles: roles.map((r) => ROLES[r.role]),
 			}),
 	})
 

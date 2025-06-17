@@ -27,14 +27,12 @@ const CreateTransactionDialog: FC<{ title: string }> = ({ title }) => {
 		id: number
 		name: string
 		balance: number
-		arrow: 'UP' | 'DOWN'
-	}>()
+	} | null>(null)
 	const [rightAccount, setRightAccount] = useState<{
 		id: number
 		name: string
 		balance: number
-		arrow: 'UP' | 'DOWN'
-	}>()
+	} | null>(null)
 
 	const { data: allAccounts } = useQuery({
 		queryKey: ['get all accounts'],
@@ -48,7 +46,7 @@ const CreateTransactionDialog: FC<{ title: string }> = ({ title }) => {
 				queryKey: ['get arrow', leftAccount?.id],
 				queryFn: () =>
 					InvoicesService.getTransactionArrow({
-						id: leftAccount?.id,
+						id: leftAccount?.id!,
 						entryType: 'DEBIT',
 					}),
 			},
@@ -56,7 +54,7 @@ const CreateTransactionDialog: FC<{ title: string }> = ({ title }) => {
 				queryKey: ['get arrow', rightAccount?.id],
 				queryFn: () =>
 					InvoicesService.getTransactionArrow({
-						id: rightAccount?.id,
+						id: rightAccount?.id!,
 						entryType: 'CREDIT',
 					}),
 			},
@@ -68,8 +66,6 @@ const CreateTransactionDialog: FC<{ title: string }> = ({ title }) => {
 			}
 		},
 	})
-
-	console.log(results)
 
 	//send post request
 	const { mutate } = useMutation({
@@ -90,15 +86,15 @@ const CreateTransactionDialog: FC<{ title: string }> = ({ title }) => {
 	const clearFields = () => {
 		setAmount('')
 		setDescription('')
-		setLeftAccount(undefined)
-		setRightAccount(undefined)
+		setLeftAccount(null)
+		setRightAccount(null)
 	}
 
 	const handleSubmit = () => {
 		mutate({
 			transactionRequest: {
-				leftAccountId: leftAccount?.id,
-				rightAccountId: rightAccount?.id,
+				leftAccountId: leftAccount?.id!,
+				rightAccountId: rightAccount?.id!,
 				amount: +amount,
 				description: description,
 			},
@@ -106,7 +102,7 @@ const CreateTransactionDialog: FC<{ title: string }> = ({ title }) => {
 		setOpen(false)
 	}
 
-	const handleOpenChange = (isOpen) => {
+	const handleOpenChange = (isOpen: boolean) => {
 		setOpen(isOpen)
 		clearFields()
 	}
@@ -130,9 +126,9 @@ const CreateTransactionDialog: FC<{ title: string }> = ({ title }) => {
 						{leftAccount ? (
 							<span className="flex items-center gap-1">
 								{results.data[0]?.data === 'DOWN' ? (
-									<BsIcon name="BsArrowDown" color="white" size={30} />
+									<BsIcon name="BsArrowDown" color="black" size={30} />
 								) : (
-									<BsIcon name="BsArrowUp" color="white" size={30} />
+									<BsIcon name="BsArrowUp" color="black" size={30} />
 								)}
 								Balance:
 								<br />
@@ -147,12 +143,12 @@ const CreateTransactionDialog: FC<{ title: string }> = ({ title }) => {
 							setPicked={setLeftAccount}
 							dataToPick={
 								rightAccount
-									? allAccounts
+									? allAccounts!
 											?.filter((a) => a.id !== rightAccount.id)
 											.map((a) => {
 												return { id: a.id, name: a.name, balance: a.balance }
 											})
-									: allAccounts?.map((a) => {
+									: allAccounts!?.map((a) => {
 											return { id: a.id, name: a.name, balance: a.balance }
 									  })
 							}
@@ -162,9 +158,9 @@ const CreateTransactionDialog: FC<{ title: string }> = ({ title }) => {
 						{rightAccount ? (
 							<span className="flex items-center gap-1">
 								{results.data[1]?.data === 'DOWN' ? (
-									<BsIcon name="BsArrowDown" color="white" size={30} />
+									<BsIcon name="BsArrowDown" color="black" size={30} />
 								) : (
-									<BsIcon name="BsArrowUp" color="white" size={30} />
+									<BsIcon name="BsArrowUp" color="black" size={30} />
 								)}
 								Balance:
 								<br />
@@ -179,12 +175,12 @@ const CreateTransactionDialog: FC<{ title: string }> = ({ title }) => {
 							setPicked={setRightAccount}
 							dataToPick={
 								leftAccount
-									? allAccounts
+									? allAccounts!
 											?.filter((a) => a.id !== leftAccount.id)
 											.map((a) => {
 												return { id: a.id, name: a.name, balance: a.balance }
 											})
-									: allAccounts?.map((a) => {
+									: allAccounts!?.map((a) => {
 											return { id: a.id, name: a.name, balance: a.balance }
 									  })
 							}

@@ -1,6 +1,5 @@
 'use client'
 
-import { TrendingUp } from 'lucide-react'
 import { Bar, BarChart, XAxis, YAxis } from 'recharts'
 
 import {
@@ -14,54 +13,78 @@ import {
 import {
 	type ChartConfig,
 	ChartContainer,
-	ChartLegend,
-	ChartLegendContent,
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart'
-const chartData = [
-	{
-		browser: 'chrome',
-		visitors: 5281,
-		mobVisitors: 1525,
-	},
-	{
-		browser: 'safari',
-		allDeposit: 3700,
-		desktopVisitors: 2062,
-	},
-]
+import { useQueries } from '@tanstack/react-query'
+import { DashboardService } from '@/services/accounts.service'
+import { useEffect, useState } from 'react'
 
 const chartConfig = {
-	chrome: {
-		label: 'Chrome',
+	ASSETS: {
+		label: 'ASSETS',
 		color: 'hsl(var(--chart-1))',
 	},
-	safari: {
-		label: 'Safari',
+	EXPENSE: {
+		label: 'EXPENSE',
 		color: 'hsl(99, 98%, 37%)',
 	},
 } satisfies ChartConfig
 
 export function InvoicesChart() {
+	const { data } = useQueries({
+		queries: [
+			{
+				queryKey: ['get assets'],
+				queryFn: () => DashboardService.getAccountByType('ASSET'),
+			},
+			{
+				queryKey: ['get expenses'],
+				queryFn: () => DashboardService.getAccountByType('EXPENSE'),
+			},
+		],
+		combine: (results) => {
+			return {
+				data: results.map((result) => result.data),
+				pending: results.some((result) => result.isPending),
+			}
+		},
+	})
+
+	const [data2, setData2] = useState<{ name: string; amount: number }[] | []>(
+		[]
+	)
+
+	useEffect(() => {
+		if (data.length) {
+			setData2([
+				{ name: 'ASSETS', amount: +data[0]?.data! },
+				{ name: 'EXPENSE', amount: +data[1]?.data! },
+			])
+		}
+	}, [data])
+
+	console.log(data2)
+	console.log(data)
+
 	return (
-		<Card className="border-none rounded-none h-full">
+		<Card className="flex flex-col border-none rounded-none h-full w-full">
 			<CardHeader>
-				<CardTitle>Bar Chart - Mixed</CardTitle>
-				<CardDescription>January - June 2024</CardDescription>
+				<CardTitle>Assets and expense</CardTitle>
+				<CardDescription>January - June 2025</CardDescription>
 			</CardHeader>
 			<CardContent>
 				<ChartContainer config={chartConfig}>
 					<BarChart
 						accessibilityLayer
-						data={chartData}
+						data={data2 ? data2 : []}
 						layout="vertical"
 						margin={{
-							left: 0,
+							left: 10,
 						}}
 					>
 						<YAxis
-							dataKey="browser"
+							dataKey="name"
 							type="category"
 							tickLine={false}
 							tickMargin={10}
@@ -70,29 +93,18 @@ export function InvoicesChart() {
 								chartConfig[value as keyof typeof chartConfig]?.label
 							}
 						/>
-						<XAxis dataKey="visitors" type="number" hide />
+						<XAxis dataKey="amount" type="number" hide />
 						<ChartTooltip
 							cursor={false}
 							content={<ChartTooltipContent hideLabel />}
 						/>
-						<ChartLegend content={<ChartLegendContent />} />
-						<Bar dataKey="mobVisitors" stackId="a" fill="var(--color-chrome)" />
-						<Bar
-							dataKey="desktopVisitors"
-							stackId="a"
-							fill="hsl(99, 98%, 37%)"
-						/>
-						<Bar dataKey="allDeposit" stackId="a" fill="hsl(99, 54%, 33%)" />
-						<Bar dataKey="visitors" stackId="a" />
+						<Bar dataKey="amount" layout="vertical" radius={5} />
 					</BarChart>
 				</ChartContainer>
 			</CardContent>
 			<CardFooter className="flex-col items-start gap-2 text-sm">
-				<div className="flex gap-2 font-medium leading-none">
-					Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-				</div>
 				<div className="leading-none text-muted-foreground">
-					Showing total visitors for the last 6 months
+					Showing assets and expense
 				</div>
 			</CardFooter>
 		</Card>

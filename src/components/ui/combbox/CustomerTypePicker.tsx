@@ -1,14 +1,12 @@
 'use client'
 
-import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react'
+import { ChevronsUpDownIcon } from 'lucide-react'
 
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
 	Command,
 	CommandEmpty,
 	CommandGroup,
-	CommandInput,
 	CommandItem,
 	CommandList,
 } from '@/components/ui/command'
@@ -17,8 +15,6 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from '@/components/ui/popover'
-import { TooltipContent, TooltipTrigger } from '@radix-ui/react-tooltip'
-import { Tooltip } from '../tooltip'
 import { useState, type FC } from 'react'
 
 export const CustomerTypePicker: FC<{

@@ -20,10 +20,20 @@ import {
 import { useState, type FC } from 'react'
 
 export const TransactionsPicker: FC<{
-	picked: { id: number; name: string }
-	setPicked: React.Dispatch<React.SetStateAction<{ id: number; name: string }>>
+	picked: {
+		id: number
+		name: string
+		balance: number
+	} | null
+	setPicked: React.Dispatch<
+		React.SetStateAction<{
+			id: number
+			name: string
+			balance: number
+		} | null>
+	>
 	placeholder: string
-	dataToPick: { id: number; name: string }[]
+	dataToPick: { id: number; name: string; balance: number }[]
 }> = ({ picked, setPicked, placeholder, dataToPick }) => {
 	const [open, setOpen] = useState(false)
 
@@ -37,7 +47,7 @@ export const TransactionsPicker: FC<{
 						aria-expanded={open}
 						className="justify-start w-fit"
 					>
-						{picked
+						{picked !== null
 							? dataToPick.find((s) => s.id === picked.id)?.name
 							: placeholder}
 						<ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -67,8 +77,7 @@ export const TransactionsPicker: FC<{
 										className={cn(
 											'mr-2 h-4 w-4',
 											picked
-												? dataToPick?.filter((p) => pick.id === picked.id)
-														.length
+												? dataToPick?.filter((p) => p.id === picked.id).length
 													? 'opacity-100'
 													: 'opacity-0'
 												: 'opacity-0'

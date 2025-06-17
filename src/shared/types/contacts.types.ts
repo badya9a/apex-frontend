@@ -9,4 +9,5 @@ export interface IContact {
 	billingCity: string
 	billingZipCode: string
 	billingCountry: string
+	id: number
 }

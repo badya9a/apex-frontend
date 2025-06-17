@@ -1,6 +1,5 @@
-import BsIcon from '@/components/ui/BsIcon'
 import CreateCustomerDialog from '@/components/ui/dialog/CreateCustomerDialog'
-import MultiPageDialog from '@/components/ui/dialog/CreateInvoiceDialog'
+import Pagination from '@/components/ui/pagination/Pagination'
 import {
 	Table,
 	TableBody,
@@ -15,21 +14,25 @@ import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 
 const Customers = () => {
-	const [page, setPage] = useState<number>(0)
-	const [size, setSize] = useState<number>(10)
-	const [maxPages, setMaxPages] = useState<number>(0)
+	const [page, setPage] = useState(0)
+	const [maxPages, setMaxPages] = useState(1)
+	const size = 15
 
 	const { data: allCustomers } = useQuery({
-		queryKey: ['get all customers'],
-		queryFn: () => CustomersService.getAll(),
-		select: (data) => data.data,
+		queryKey: ['get all customers with pagination', page],
+		queryFn: () => CustomersService.getCustomersWithPagination({ page, size }),
+		select: ({ data }) => data,
 	})
 
-	console.log(allCustomers)
+	useEffect(() => {
+		if (allCustomers?.totalPages) {
+			setMaxPages(allCustomers?.totalPages!)
+		}
+	}, [allCustomers?.totalPages])
 
 	return (
 		<div>
-			<CreateCustomerDialog />
+			<CreateCustomerDialog title="CREATE NEW CUSTOMER" formType="create" />
 			<Table>
 				<TableCaption>A list of your customers.</TableCaption>
 				<TableHeader>
@@ -38,11 +41,12 @@ const Customers = () => {
 						<TableHead>Representative</TableHead>
 						<TableHead>Billing Address</TableHead>
 						<TableHead>Phone</TableHead>
-						<TableHead>email</TableHead>
+						<TableHead>Email</TableHead>
+						<TableHead>Actions</TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{allCustomers?.map((c) => (
+					{allCustomers?.content.map((c) => (
 						<TableRow className={``} key={c.email}>
 							<TableCell className="font-medium">{c.companyName}</TableCell>
 							<TableCell className="font-medium">
@@ -54,10 +58,18 @@ const Customers = () => {
 							</TableCell>
 							<TableCell className="flex">{c.phone}</TableCell>
 							<TableCell>{c.email}</TableCell>
+							<TableCell>
+								<CreateCustomerDialog
+									title="Edit"
+									formType="update"
+									contact={c}
+								/>
+							</TableCell>
 						</TableRow>
 					))}
 				</TableBody>
 			</Table>
+			<Pagination page={page} maxPages={maxPages} setPage={setPage} />
 		</div>
 	)
 }

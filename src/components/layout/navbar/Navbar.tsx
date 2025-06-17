@@ -1,17 +1,22 @@
 import { BsList } from 'react-icons/bs'
-import { headerLinks } from './navbar.data'
 import { NavLink } from 'react-router'
-import BsIcon from '@/components/ui/BsIcon'
 import useAuth from '@/hooks/useAuth'
+import type { FC } from 'react'
 
-const Navbar = () => {
+const Navbar: FC<{
+	setActiveSidebar: React.Dispatch<React.SetStateAction<boolean>>
+}> = ({ setActiveSidebar }) => {
 	const { user } = useAuth()
-
-	console.log(user)
 
 	return (
 		<div className="flex justify-between p-3 bg-black opacity-90">
-			<div className="flex items-center text-white">
+			<div className="flex items-center text-white gap-3">
+				<button
+					className="hover:cursor-pointer"
+					onClick={() => setActiveSidebar((prev) => !prev)}
+				>
+					<BsList size={24} />
+				</button>
 				<div className="flex gap-3">
 					<NavLink to={`/dashboards`} className="flex gap-2 w-full">
 						<img src="/logo.png" alt="logo" width={30} height={30} />
@@ -20,7 +25,6 @@ const Navbar = () => {
 						</p>
 					</NavLink>
 				</div>
-				<BsList size={24} />
 			</div>
 			<div>
 				<nav>

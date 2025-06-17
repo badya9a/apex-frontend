@@ -1,5 +1,5 @@
-import BsIcon from '@/components/ui/BsIcon'
 import MultiPageDialog from '@/components/ui/dialog/CreateInvoiceDialog'
+import Pagination from '@/components/ui/pagination/Pagination'
 import { EditInvoice } from '@/components/ui/popover/EditInvoice'
 import {
 	Table,
@@ -16,30 +16,18 @@ import { useEffect, useState } from 'react'
 
 const InvoicesPage = () => {
 	const [page, setPage] = useState<number>(0)
-	const [size, setSize] = useState<number>(10)
+	const size = 10
 	const [maxPages, setMaxPages] = useState<number>(10)
 
-	const {
-		data: invoices,
-		isLoading,
-		refetch,
-	} = useQuery({
-		queryKey: ['get all invoices'],
+	const { data: invoices, isLoading } = useQuery({
+		queryKey: ['get all invoices', page],
 		queryFn: () => InvoicesService.getAll({ page, size }),
 		select: (data) => data.data,
 	})
 
 	useEffect(() => {
-		setMaxPages(invoices?.totalPages)
-	}, [invoices?.totalPages])
-
-	useEffect(() => {
-		refetch()
-	}, [page])
-
-	console.log(invoices)
-	console.log(maxPages)
-	console.log(page)
+		setMaxPages(invoices?.totalPages ? invoices?.totalPages : 1)
+	}, [invoices])
 
 	return (
 		<div>
@@ -65,17 +53,19 @@ const InvoicesPage = () => {
 						</TableRow>
 					) : (
 						invoices?.content.map((invoice) => (
-							<TableRow key={invoice.id}>
-								<TableCell className="font-medium">{invoice.code}</TableCell>
+							<TableRow key={invoice.description}>
+								<TableCell className="font-medium">
+									{invoice.invoiceNumber}
+								</TableCell>
 								<TableCell>{invoice.customer}</TableCell>
-								<TableCell>{invoice.issueDate}</TableCell>
-								<TableCell>{invoice.dueDate}</TableCell>
+								<TableCell>{invoice.issueDate.toString()}</TableCell>
+								<TableCell>{invoice.dueDate.toString()}</TableCell>
 								<TableCell>{invoice.description}</TableCell>
 								<TableCell>{invoice.amount}$</TableCell>
 								<TableCell>{invoice.status}</TableCell>
 								<TableCell>
 									<EditInvoice
-										code={invoice?.code}
+										invoiceNumber={invoice?.invoiceNumber}
 										defaultValue={invoice?.description}
 									/>
 								</TableCell>
@@ -84,30 +74,7 @@ const InvoicesPage = () => {
 					)}
 				</TableBody>
 			</Table>
-			<div className="flex gap-2">
-				<button
-					className="hover:cursor-pointer"
-					onClick={() => setPage(0)}
-					disabled={page === 0 ? true : false}
-				>
-					<BsIcon name="BsChevronDoubleLeft" size={20} color="BsChevronLeft" />
-				</button>
-				<button
-					className="hover:cursor-pointer"
-					onClick={() => setPage((prev) => prev - 1)}
-					disabled={page === 0 ? true : false}
-				>
-					<BsIcon name="BsChevronLeft" size={20} color="white" />
-				</button>
-				<p className="text-lg">{page + 1}</p>
-				<button
-					disabled={maxPages - 1 === page ? true : false}
-					onClick={() => setPage((prev) => prev + 1)}
-					className="hover:cursor-pointer"
-				>
-					<BsIcon name="BsChevronRight" size={20} color="white" />
-				</button>
-			</div>
+			<Pagination page={page} maxPages={maxPages} setPage={setPage} />
 		</div>
 	)
 }

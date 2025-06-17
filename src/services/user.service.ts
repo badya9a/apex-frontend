@@ -1,31 +1,33 @@
 import axiosClassic from '@/api/interceptors'
 import type { availableRoles, IUser } from '@/shared/types/user.types'
-import axios from 'axios'
 
 export const UserService = {
-	async getAll(searchTerm?: string) {
-		return axiosClassic.get<IUser[]>(`/api/admin/users/search`)
+	async getAll({ page, size }: { page: number; size: number }) {
+		return axiosClassic.get<{ content: IUser[]; totalPages: number }>(
+			`/api/admin/users/search`,
+			{ params: { page, size } }
+		)
 	},
 
-	async getUserProfileById(id: string) {
+	async getUserProfileById() {
 		return axiosClassic.get<IUser>('/api/users/me')
 	},
 
 	async resetUserPassword(id: string) {
-		return axiosClassic.put<string>(`api/users/change-password`, {
-			publicId: id,
+		return axiosClassic.put<string>(`api/admin/users/reset-password`, {
+			id,
 		})
 	},
 
-	async changeUsersRole(id: string, roles: typeof availableRoles) {
-		return await axiosClassic.put('/api/admin/users/update/roles', {
+	async changeUsersRole(id: string, roles: availableRoles[]) {
+		return await axiosClassic.patch('/api/admin/users/update/roles', {
 			publicId: id,
 			roles,
 		})
 	},
 
 	async changeUsersInfo(id: string, user: Omit<IUser, 'publicId'>) {
-		return await axiosClassic.put(`/api/admin/users/update/creds`, {
+		return await axiosClassic.patch(`/api/admin/users/update/creds`, {
 			publicId: id,
 			...user,
 		})

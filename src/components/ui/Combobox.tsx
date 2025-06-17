@@ -8,7 +8,6 @@ import {
 	Command,
 	CommandEmpty,
 	CommandGroup,
-	CommandInput,
 	CommandItem,
 	CommandList,
 } from '@/components/ui/command'
@@ -18,12 +17,12 @@ import {
 	PopoverTrigger,
 } from '@/components/ui/popover'
 import { useEffect, useState, type FC } from 'react'
-import { ROLES } from '@/shared/types/user.types'
 import BsIcon from './BsIcon'
 import { Tooltip } from './tooltip'
 import { TooltipContent, TooltipTrigger } from '@radix-ui/react-tooltip'
+import type { availableRoles } from '@/shared/types/user.types'
 
-const rolesData = [
+const rolesData: { role: availableRoles }[] = [
 	{ role: 'ADMIN' },
 	{ role: 'ACCOUNTANT' },
 	{ role: 'VIEWER' },
@@ -31,12 +30,12 @@ const rolesData = [
 ]
 
 export const Combobox: FC<{
-	defaultRoles: { role: string }[]
+	defaultRoles: { role: availableRoles }[]
 	roles: { role: string }[]
 	setRoles: React.Dispatch<
 		React.SetStateAction<
 			{
-				role: string
+				role: availableRoles
 			}[]
 		>
 	>
@@ -44,7 +43,7 @@ export const Combobox: FC<{
 	const [open, setOpen] = useState(false)
 
 	useEffect(() => {
-		setRoles((prev) => [...defaultRoles])
+		setRoles([...defaultRoles])
 	}, [])
 
 	return (
@@ -95,11 +94,11 @@ export const Combobox: FC<{
 					<CommandList>
 						<CommandEmpty>No framework found.</CommandEmpty>
 						<CommandGroup>
-							{rolesData.map((r) => (
+							{rolesData.map((r: { role: availableRoles }) => (
 								<CommandItem
 									key={r.role}
 									value={r.role}
-									onSelect={(currentValue) => {
+									onSelect={() => {
 										if (!roles.some((role) => role.role === r.role)) {
 											setRoles((prev) => [...prev, r])
 										} else {

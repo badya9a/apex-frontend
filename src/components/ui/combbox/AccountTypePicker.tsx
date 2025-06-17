@@ -1,14 +1,12 @@
 'use client'
 
-import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react'
+import { ChevronsUpDownIcon } from 'lucide-react'
 
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
 	Command,
 	CommandEmpty,
 	CommandGroup,
-	CommandInput,
 	CommandItem,
 	CommandList,
 } from '@/components/ui/command'
@@ -19,17 +17,11 @@ import {
 } from '@/components/ui/popover'
 import { useState, type FC } from 'react'
 
-export const Picker: FC<{
-	picked: { fullName: string; id: number; companyName: string } | null
-	setPicked: React.Dispatch<
-		React.SetStateAction<{
-			fullName: string
-			id: number
-			companyName: string
-		} | null>
-	>
+export const AccountTypePicker: FC<{
+	picked: string
+	setPicked: React.Dispatch<React.SetStateAction<string>>
 	placeholder: string
-	dataToPick: { fullName: string; id: number; companyName: string }[]
+	dataToPick: string[]
 }> = ({ picked, setPicked, placeholder, dataToPick }) => {
 	const [open, setOpen] = useState(false)
 
@@ -43,45 +35,28 @@ export const Picker: FC<{
 						aria-expanded={open}
 						className="justify-start w-fit"
 					>
-						{picked !== null
-							? dataToPick.find((s) => s.id === picked.id)?.fullName
-							: placeholder}
+						{picked ? dataToPick.find((s) => s === picked) : placeholder}
 						<ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 					</Button>
 				</PopoverTrigger>
 			</div>
 			<PopoverContent className="w-[200px] p-0 bg-gray-300">
 				<Command>
-					<CommandInput placeholder={placeholder} className="h-9" />
 					<CommandList>
 						<CommandEmpty>Not found.</CommandEmpty>
 						<CommandGroup>
-							{dataToPick?.map((pick) => (
+							{dataToPick.map((pick) => (
 								<CommandItem
-									key={pick.id}
-									value={pick.fullName}
+									key={pick}
+									value={pick}
 									onSelect={(currentValue) => {
-										if (picked) {
-											setPicked(
-												currentValue === picked.fullName ? picked : pick
-											)
-										} else {
+										if (picked !== currentValue) {
 											setPicked(pick)
 										}
 										setOpen(false)
 									}}
 								>
-									<CheckIcon
-										className={cn(
-											'mr-2 h-4 w-4',
-											picked !== null
-												? dataToPick?.filter((p) => p.id === picked.id).length
-													? 'opacity-100'
-													: 'opacity-0'
-												: 'opacity-0'
-										)}
-									/>
-									{pick.companyName} {pick.fullName}
+									{pick}
 								</CommandItem>
 							))}
 						</CommandGroup>

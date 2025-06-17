@@ -1,7 +1,5 @@
 'use client'
-
-import { TrendingUp } from 'lucide-react'
-import { Bar, BarChart, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from 'recharts'
 
 import {
 	Card,
@@ -14,79 +12,108 @@ import {
 import {
 	type ChartConfig,
 	ChartContainer,
-	ChartLegend,
-	ChartLegendContent,
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart'
-const chartData = [
-	{
-		browser: 'chrome',
-		visitors: 186,
-		mobVisitors: 80,
-	},
-	{
-		browser: 'safari',
-		visitors: 120,
-		mobVisitors: 80,
-	},
-]
+import { useQuery } from '@tanstack/react-query'
+import { DashboardService } from '@/services/accounts.service'
+import { useEffect, useState } from 'react'
+
+export const description = 'A bar chart with a custom label'
 
 const chartConfig = {
-	chrome: {
-		label: 'Chrome',
-		color: 'hsl(var(--chart-1))',
+	amount: {
+		label: 'Amount',
+		color: 'var(--chart-2)',
 	},
-	safari: {
-		label: 'Safari',
-		color: 'hsl(var(--chart-2))',
+	label: {
+		color: 'var(--background)',
 	},
 } satisfies ChartConfig
 
 export function BarChartComponent() {
+	const { data } = useQuery({
+		queryKey: ['get bar chart data'],
+		queryFn: () => DashboardService.getPieChartData(),
+		select: (data) => data.data,
+	})
+
+	const [data2, setData2] = useState<{ name: string; amount: number }[] | []>(
+		[]
+	)
+
+	useEffect(() => {
+		if (data) {
+			setData2([
+				{ name: 'ASSET', amount: data.ASSET },
+				{ name: 'REVENUE', amount: data.REVENUE },
+				{ name: 'EXPENSES', amount: data.EXPENSE },
+				{ name: 'LIABILITY', amount: data.LIABILITY },
+				{ name: 'EQUITY', amount: data.EQUITY },
+			])
+		}
+	}, [data])
+
 	return (
-		<Card className="border-none rounded-none h-full">
+		<Card className="flex flex-col border-none rounded-none h-full w-full">
 			<CardHeader>
-				<CardTitle>Bar Chart - Mixed</CardTitle>
-				<CardDescription>January - June 2024</CardDescription>
+				<CardTitle>Assets</CardTitle>
+				<CardDescription>January - June 2025</CardDescription>
 			</CardHeader>
-			<CardContent>
-				<ChartContainer config={chartConfig}>
+			<CardContent className="h-full">
+				<ChartContainer config={chartConfig} className="h-full w-full">
 					<BarChart
+						className="h-full"
 						accessibilityLayer
-						data={chartData}
+						data={data2 ? data2 : []}
 						layout="vertical"
 						margin={{
-							left: 0,
+							right: 30,
+							left: 70,
 						}}
 					>
+						<CartesianGrid horizontal={false} />
 						<YAxis
-							dataKey="browser"
+							dataKey="name"
 							type="category"
 							tickLine={false}
 							tickMargin={10}
 							axisLine={false}
-							tickFormatter={(value) =>
-								chartConfig[value as keyof typeof chartConfig]?.label
-							}
+							tickFormatter={(value) => value.slice(0, 3)}
+							hide
 						/>
-						<XAxis dataKey="visitors" type="number" hide />
+						<XAxis dataKey="amount" type="number" hide />
 						<ChartTooltip
 							cursor={false}
-							content={<ChartTooltipContent hideLabel />}
+							content={<ChartTooltipContent indicator="line" />}
 						/>
-						<ChartLegend content={<ChartLegendContent />} />
-						<Bar dataKey="visitors" stackId="a" fill="var(--color-chrome)" />
-						<Bar dataKey="mobVisitors" stackId="a" fill="var(--color-safari)" />
+						<Bar
+							dataKey="amount"
+							layout="vertical"
+							fill="var(--color-desktop)"
+							radius={4}
+						>
+							<LabelList
+								dataKey="name"
+								position="left"
+								offset={8}
+								className="fill-(--color-label)"
+								fontSize={12}
+							/>
+							<LabelList
+								dataKey="amount"
+								position="right"
+								offset={2}
+								className="fill-foreground"
+								fontSize={10}
+							/>
+						</Bar>
 					</BarChart>
 				</ChartContainer>
 			</CardContent>
 			<CardFooter className="flex-col items-start gap-2 text-sm">
-				<div className="flex gap-2 font-medium leading-none">
-					Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-				</div>
-				<div className="leading-none text-muted-foreground">
-					Showing total visitors for the last 6 months
+				<div className="text-muted-foreground leading-none">
+					Showing total assets for the last 6 months
 				</div>
 			</CardFooter>
 		</Card>
